@@ -1,17 +1,14 @@
-// Classe Inimigo herda de EntidadeGame (Herança)
+// Classe Inimigo
 class Inimigo extends EntidadeGame {
   constructor(x, y, tipo = "basico") {
     // Configurações baseadas no tipo
-    let config = Inimigo.#getConfigTipo(tipo); // Método estático privado
+    let config = Inimigo.#getConfigTipo(tipo);
 
-    // Chama construtor da classe pai (super) - Polimorfismo
     super(x, y, config.largura, config.altura, config.cor);
 
-    // Atributos privados (#)
     this.#tipo = tipo;
     this.#ultimoTiro = 0;
 
-    // Atributos públicos
     this.vida = config.vida;
     this.ativa = true;
     this.velocidade = config.velocidade;
@@ -19,11 +16,9 @@ class Inimigo extends EntidadeGame {
     this.intervaloTiro = config.intervaloTiro;
   }
 
-  // Atributos privados
   #tipo;
   #ultimoTiro;
 
-  // Método estático privado para configuração de tipos
   static #getConfigTipo(tipo) {
     const configs = {
       basico: {
@@ -33,7 +28,7 @@ class Inimigo extends EntidadeGame {
         cor: color(150, 50, 200),
         vida: 1,
         intervaloTiro: 2000,
-        pontos: 10
+        pontos: 10,
       },
       rapido: {
         largura: 20,
@@ -42,7 +37,7 @@ class Inimigo extends EntidadeGame {
         cor: color(50, 150, 255),
         vida: 1,
         intervaloTiro: 1500,
-        pontos: 15
+        pontos: 15,
       },
       forte: {
         largura: 35,
@@ -51,33 +46,29 @@ class Inimigo extends EntidadeGame {
         cor: color(255, 100, 50),
         vida: 2,
         intervaloTiro: 3000,
-        pontos: 25
-      }
+        pontos: 25,
+      },
     };
     return configs[tipo] || configs.basico;
   }
 
-  // Getter para tipo
   get tipo() {
     return this.#tipo;
   }
 
-  // Setter para tipo (não recomendado, mas para demonstrar get/set)
   set tipo(valor) {
     if (["basico", "rapido", "forte"].includes(valor)) {
       this.#tipo = valor;
     }
   }
 
-  // Override do método show (Polimorfismo)
   show() {
     if (!this.ativa) return;
 
-    // Usa this() implicitamente ao chamar métodos da própria classe
     this.desenharCorpo();
     this.desenharDetalhes();
 
-    // Barra de vida (apenas para inimigos fortes)
+    // Barra de vida dos inimigos fortes
     if (this.#tipo === "forte" && this.vida < 2) {
       this.desenharBarraVida();
     }
@@ -120,11 +111,20 @@ class Inimigo extends EntidadeGame {
     rect(this.x - (barraWidth - vidaWidth) / 2, barraY, vidaWidth, barraHeight);
   }
 
-  // Override do método mover (Polimorfismo)
   mover() {
     if (!this.ativa) return;
 
-    this.x += this.velocidade;
+    // Aplica velocidade base do inimigo mais o bônus calculado pela pontuação
+    let bonus = 0;
+    if (typeof getBonusVelocidadeInimigos === "function") {
+      try {
+        bonus = getBonusVelocidadeInimigos();
+      } catch (e) {
+        bonus = 0;
+      }
+    }
+
+    this.x += this.velocidade + bonus;
 
     // Movimento vertical suave
     this.y += sin(frameCount * 0.1) * 0.5;
@@ -147,7 +147,7 @@ class Inimigo extends EntidadeGame {
 
     let agora = millis();
 
-    // Verifica se pode atirar (baseado no intervalo)
+    // Verifica se pode atirar baseado no intervalo
     if (agora - this.#ultimoTiro > this.intervaloTiro) {
       this.#ultimoTiro = agora;
 
@@ -170,9 +170,7 @@ class Inimigo extends EntidadeGame {
     return false; // Ainda tem vida
   }
 
-  // Override do método getHitbox (Polimorfismo)
   getHitbox() {
-    // Usa super para obter hitbox base
     return super.getHitbox();
   }
 }

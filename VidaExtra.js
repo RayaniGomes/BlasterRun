@@ -1,33 +1,27 @@
-// Classe VidaExtra herda de PowerUpBase (Herança)
+// Classe VidaExtra 
 class VidaExtra extends PowerUpBase {
-  // Atributos privados
   #pulso;
   #coletada;
 
   constructor(x, y) {
-    // Chama construtor da classe pai (super) - Polimorfismo
     super(x, y, 30, color(255, 50, 50));
 
-    // Inicializa atributos privados
     this.#pulso = 0;
     this.#coletada = false;
 
-    // Partículas
     this.particulas = [];
     this.criarParticulas();
   }
 
-  // Getter para estado de coleta
   get coletada() {
     return this.#coletada;
   }
 
-  // Setter para estado de coleta
   set coletada(valor) {
     this.#coletada = valor;
   }
 
-  // Método privado para criar partículas
+  // Método para criar partículas
   criarParticulas() {
     for (let i = 0; i < 8; i++) {
       this.particulas.push({
@@ -38,7 +32,6 @@ class VidaExtra extends PowerUpBase {
     }
   }
 
-  // Override do método show (Polimorfismo)
   show() {
     if (!this.ativa || this.#coletada) return;
 
@@ -89,7 +82,7 @@ class VidaExtra extends PowerUpBase {
     endShape(CLOSE);
   }
 
-  // Override do método mover - move em direção à nave
+  // Método mover em direção à nave
   mover(naveX, naveY) {
     // Calcula direção para a nave
     if (naveX !== undefined && naveY !== undefined) {
@@ -99,12 +92,11 @@ class VidaExtra extends PowerUpBase {
 
       // Normaliza o vetor de direção
       if (distancia > 0) {
-        let velocidade = 2.5; // Velocidade de movimento em direção à nave
+        let velocidade = 2.5;
         this.x += (dx / distancia) * velocidade;
         this.y += (dy / distancia) * velocidade;
       }
     } else {
-      // Fallback: se não receber posição da nave, move para esquerda (comportamento padrão)
       super.mover();
     }
 
@@ -127,7 +119,6 @@ class VidaExtra extends PowerUpBase {
     }
   }
 
-  // Override do método coletar
   coletar(nave) {
     if (!this.#coletada && nave.adicionarVida()) {
       this.#coletada = true;
@@ -137,9 +128,7 @@ class VidaExtra extends PowerUpBase {
     return false;
   }
 
-  // Override do método getHitbox
   getHitbox() {
-    // Usa super para obter hitbox base
     return super.getHitbox();
   }
 }

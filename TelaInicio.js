@@ -26,10 +26,8 @@ class TelaInicio {
   }
 
   desenhar() {
-    // Overlay escuro com transparência
     fill(0, 0, 0, 180);
     rect(0, 0, width, height);
-
 
     // TÍTULO PRINCIPAL - Efeito neon
     this.desenharTitulo();
@@ -47,37 +45,41 @@ class TelaInicio {
 
     // BOTÃO INICIAR - Efeito pulsante
     this.desenharBotaoIniciar();
-
-    // Linha decorativa inferior
-    stroke(0, 150, 255, 100);
-    strokeWeight(2);
-    line(width / 2 - 200, height / 2 + 180, width / 2 + 200, height / 2 + 180);
   }
 
   desenharTitulo() {
-    let pulsoTitulo = sin(frameCount * 0.1) * 0.3 + 0.7;
+    // Efeito neon azul para o título
+    let pulsoTitulo = sin(frameCount * 0.08) * 0.08 + 1.0;
     textAlign(CENTER, CENTER);
 
-    // Sombra do título
-    fill(0, 0, 0, 150);
-    textSize(50 * pulsoTitulo);
-    text("JOGO DE NAVES", width / 2 + 3, height / 2 - 130 + 3);
+    let baseSize = 56 * pulsoTitulo;
+    let x = width / 2;
+    let y = height / 2 - 130;
 
-    // Título com gradiente animado
-    let tituloGrad1 = color(255, 100, 0);
-    let tituloGrad2 = color(255, 255, 0);
-    let tituloInter = (sin(frameCount * 0.1) + 1) / 2;
-    let tituloCor = lerpColor(tituloGrad1, tituloGrad2, tituloInter);
+    push();
+    // Camada de brilho (shadow) via contexto do canvas
+    try {
+      drawingContext.shadowBlur = 30;
+      drawingContext.shadowColor = "rgba(0,150,255,0.9)";
+    } catch (e) {}
 
-    // Brilho do título
-    fill(red(tituloCor), green(tituloCor), blue(tituloCor), 100);
-    textSize(52 * pulsoTitulo);
-    text("JOGO DE NAVES", width / 2, height / 2 - 130);
+    // Glow amplo (camadas maiores e translúcidas)
+    noStroke();
+    for (let i = 6; i >= 1; i--) {
+      let alpha = map(i, 6, 1, 18, 160);
+      fill(0, 150, 255, alpha);
+      textSize(baseSize + i * 6);
+      text("BLASTER RUN", x, y);
+    }
 
-    // Título principal
-    fill(tituloCor);
-    textSize(50 * pulsoTitulo);
-    text("JOGO DE NAVES", width / 2, height / 2 - 130);
+    // Centro brilhante com contorno leve
+    stroke(80, 200, 255);
+    strokeWeight(2);
+    fill(200, 255, 255);
+    textSize(baseSize);
+    text("BLASTER RUN", x, y);
+
+    pop();
   }
 
   desenharBoxControles() {
@@ -122,7 +124,7 @@ class TelaInicio {
     fill(255);
     textSize(16);
     text("Atirar", width / 2 + 40, boxY + 75);
-    
+
     // Reiniciar
     push();
     translate(width / 2 - 70, boxY + 100);
@@ -131,10 +133,10 @@ class TelaInicio {
     pop();
     fill(0);
     textSize(10);
-    text("R", width / 2 - 60, boxY + 101);
+    text("Q", width / 2 - 60, boxY + 101);
     fill(255);
     textSize(16);
-    text("Reiniciar", width / 2 + 40, boxY + 100);
+    text("Troca de balas", width / 2 + 40, boxY + 100);
   }
 
   desenharRecorde() {
@@ -156,7 +158,7 @@ class TelaInicio {
       text("🏆 RECORDE", width / 2 - 40, recordeY);
       fill(255, 255, 100);
       textSize(20);
-      text(GameUtils.formatarPontuacao(melhor), width / 2 + 60, recordeY);
+      text(Config.formatarPontuacao(melhor), width / 2 + 60, recordeY);
       pop();
     }
   }

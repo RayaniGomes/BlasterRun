@@ -6,7 +6,7 @@ class TextoFlutuante {
     this.texto = texto;
     this.cor = cor;
     this.tamanho = tamanho;
-    this.vida = 60; // frames
+    this.vida = 60; 
     this.velocidade = -2;
     this.ativa = true;
   }

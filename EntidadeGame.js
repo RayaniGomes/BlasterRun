@@ -1,4 +1,4 @@
-// Classe base para entidades do jogo (Herança)
+// Classe base para entidades do jogo
 class EntidadeGame {
   constructor(x, y, largura, altura, cor) {
     this.x = x;
@@ -6,16 +6,6 @@ class EntidadeGame {
     this.largura = largura;
     this.altura = altura;
     this.cor = cor;
-  }
-
-  // Método virtual que será sobrescrito
-  show() {
-    // Implementação base
-  }
-
-  // Método virtual para movimento
-  mover() {
-    // Implementação base
   }
 
   // Método base para hitbox

@@ -26,7 +26,7 @@ class Nave extends EntidadeGame {
 
   // Setter para vida com limite máximo
   set vida(valor) {
-    this._vida = GameUtils.limitar(valor, 0, this.#vidaMaxima);
+    this._vida = Config.limitar(valor, 0, this.#vidaMaxima);
   }
 
   // Getter para invencibilidade
@@ -68,7 +68,7 @@ class Nave extends EntidadeGame {
 
     // Asas
     fill(this.cor);
-    rect(this.x - 5, this.y - this.altura / 2 - 5, 10, 5);
+    rect(this.x - 5, this.y - this.altura / 2, 10, 5);
     rect(this.x - 5, this.y + this.altura / 2, 10, 5);
   }
 

@@ -13,14 +13,15 @@ var powerUps = [];
 var fundoEstrelado;
 var ultimoSpawnPowerUp = 0;
 var tipoArmaAtual = "basica";
-var ultimoTiro = 0; // Controle de tiro contínuo
-var intervaloEntreTiros = 150; // Milissegundos entre cada tiro
-var telaInicio; // Instância da tela inicial
+var intervaloEntreTiros = 150;
+var telaInicio;
 
-function preload() {
-  // Não tenta carregar imagem para evitar erros de fetch
-  // O jogo usará o fundo estrelado dinâmico por padrão
-  fundoTela = null;
+// Calcula o bônus de velocidade para inimigos com base na pontuação
+// A cada 500 pontos, retorna +3, com limite máximo de 12
+function getBonusVelocidadeInimigos() {
+  let passos = Math.floor(pontuacao / 500);
+  let bonus = passos * 3;
+  return Math.min(bonus, 12);
 }
 
 function setup() {
@@ -38,11 +39,10 @@ function setup() {
   // Inicializa fundo estrelado (sempre usado)
   fundoEstrelado = new FundoEstrelado(100);
 
-  // Inicializa controle de tiro
-  ultimoTiro = 0;
-
   // Inicializa tela inicial
   telaInicio = new TelaInicio();
+  // Inicializa tela de game over (implementada em TelaGameOver.js)
+  telaGameOver = new TelaGameOver();
 
   criarInimigos();
   ultimoSpawnPowerUp = millis();
@@ -81,6 +81,7 @@ function draw() {
     desenharPontuacao();
     desenharVidas();
     desenharMelhorPontuacao();
+    desenharArmaAtual();
   }
 
   // Elementos sempre desenhados
@@ -89,13 +90,19 @@ function draw() {
 
   // Tela de game over
   if (gameOver) {
-    desenharGameOver();
+    telaGameOver.desenhar();
   }
 
   // Tela de início
   if (!jogoAtivo && !gameOver) {
     telaInicio.desenhar(fundoTela, fundoEstrelado);
   }
+}
+
+function iniciarJogo() {
+  jogoAtivo = true;
+  pontuacao = 0;
+  ultimoTiro = 0;
 }
 
 function gameControls() {
@@ -118,19 +125,32 @@ function gameControls() {
 }
 
 function keyPressed() {
-  // Tiro contínuo agora é controlado em gameControls()
-  // Mantemos keyPressed apenas para outras ações
-
   // Reiniciar jogo
   if (keyCode === 82 && gameOver) {
     // Tecla R
-    reiniciarJogo();
+    if (
+      typeof telaGameOver === "object" &&
+      typeof telaGameOver.reiniciarJogo === "function"
+    ) {
+      telaGameOver.reiniciarJogo();
+    }
+    return;
   }
 
   // Iniciar jogo
   if (keyCode === 13 && !jogoAtivo && !gameOver) {
     // Enter
     iniciarJogo();
+    return;
+  }
+
+  // Troca de arma: 1 = básica, 2 = rápida, 3 = dupla
+  if (!gameOver && jogoAtivo) {
+    // Troca de arma apenas ao pressionar Q (cicla para trás)
+    if (key === "q" || key === "Q") {
+      ciclarArma(-1);
+      return;
+    }
   }
 }
 
@@ -144,31 +164,15 @@ function mousePressed() {
 
   // Verifica se clicou no botão de reiniciar (game over)
   if (gameOver) {
-    if (clicouNoBotaoReiniciar(mouseX, mouseY)) {
-      reiniciarJogo();
+    if (
+      typeof telaGameOver === "object" &&
+      typeof telaGameOver.clicouNoBotaoReiniciar === "function"
+    ) {
+      if (telaGameOver.clicouNoBotaoReiniciar(mouseX, mouseY)) {
+        telaGameOver.reiniciarJogo();
+      }
     }
   }
-}
-
-function iniciarJogo() {
-  jogoAtivo = true;
-  pontuacao = 0;
-  ultimoTiro = 0; // Reset do timer de tiro
-}
-
-function clicouNoBotaoReiniciar(mx, my) {
-  // Área aproximada do botão de reiniciar na tela de game over
-  let botaoY = height / 2 + 80;
-  let botaoX = width / 2;
-  let botaoLargura = 400;
-  let botaoAltura = 30;
-
-  return (
-    mx >= botaoX - botaoLargura / 2 &&
-    mx <= botaoX + botaoLargura / 2 &&
-    my >= botaoY - botaoAltura / 2 &&
-    my <= botaoY + botaoAltura / 2
-  );
 }
 
 function atirar() {
@@ -441,9 +445,17 @@ function desenharTextosFlutuantes() {
 function spawnPowerUp() {
   let agora = millis();
   if (agora - ultimoSpawnPowerUp > Config.getIntervaloPowerUp()) {
-    let x = random(100, width - 100);
-    let y = random(100, height - 100);
-    powerUps.push(new VidaExtra(x, y));
+    // Só gera VidaExtra se o jogador existir e tiver menos vidas que o máximo
+    if (
+      typeof player !== "undefined" &&
+      player &&
+      player.vida < Config.getVidasMaximas()
+    ) {
+      let x = random(100, width - 100);
+      let y = random(100, height - 100);
+      powerUps.push(new VidaExtra(x, y));
+    }
+    // Atualiza o timer mesmo se não gerou (evita tentar spawnar a toda frame)
     ultimoSpawnPowerUp = agora;
   }
 }
@@ -478,7 +490,7 @@ function desenharPontuacao() {
   fill(255);
   textSize(20);
   textAlign(LEFT, TOP);
-  text(`Pontuação: ${GameUtils.formatarPontuacao(pontuacao)}`, 20, 20);
+  text(`Pontuação: ${Config.formatarPontuacao(pontuacao)}`, 20, 20);
 }
 
 function desenharMelhorPontuacao() {
@@ -486,20 +498,20 @@ function desenharMelhorPontuacao() {
   fill(200, 200, 255);
   textSize(16);
   textAlign(LEFT, TOP);
-  text(`Recorde: ${GameUtils.formatarPontuacao(melhor)}`, 20, 50);
+  text(`Recorde: ${Config.formatarPontuacao(melhor)}`, 20, 50);
 }
 
 function desenharVidas() {
   fill(255);
   textSize(20);
   textAlign(RIGHT, TOP);
-  text(`Vidas: ${player.vida}/${Config.getVidasMaximas()}`, width - 20, 20);
+  text(`Vidas: ${player.vida}/${Config.getVidasMaximas()}`, width / 2, 20);
 
   // Desenha corações para vidas
   fill(255, 50, 50);
   for (let i = 0; i < player.vida; i++) {
-    let x = width - 100 + i * 25;
-    desenharCoracao(x, 25, 8);
+    let x = width / 2 + 15 + i * 20;
+    desenharCoracao(x, 20, 8);
   }
 }
 
@@ -518,76 +530,54 @@ function desenharCoracao(x, y, tamanho) {
   endShape(CLOSE);
 }
 
-function desenharGameOver() {
-  fill(0, 0, 0, 200);
-  rect(0, 0, width, height);
+// -------------------- Troca de arma --------------------
+const _armasDisponiveis = ["basica", "rapida", "dupla"];
 
-  fill(255, 50, 50);
-  textSize(40);
-  textAlign(CENTER, CENTER);
-  text("GAME OVER", width / 2, height / 2 - 80);
-
-  fill(255);
-  textSize(24);
-  text(
-    `Pontuação Final: ${GameUtils.formatarPontuacao(pontuacao)}`,
-    width / 2,
-    height / 2 - 30
+function trocarArma(nova) {
+  if (!_armasDisponiveis.includes(nova)) return;
+  if (tipoArmaAtual === nova) return;
+  tipoArmaAtual = nova;
+  // Feedback visual
+  criarTextoFlutuante(
+    player.xNave,
+    player.yNave - 30,
+    `Arma: ${nova.toUpperCase()}`,
+    color(200, 200, 255)
   );
-
-  let melhor = Ranking.getMelhorPontuacao();
-  if (pontuacao >= melhor && melhor > 0) {
-    fill(255, 255, 0);
-    textSize(20);
-    text("🏆 NOVO RECORDE! 🏆", width / 2, height / 2 + 10);
-  }
-
-  fill(200, 200, 255);
-  textSize(18);
-  text(
-    `Melhor Pontuação: ${GameUtils.formatarPontuacao(melhor)}`,
-    width / 2,
-    height / 2 + 40
-  );
-
-  // Botão de reiniciar
-  let botaoY = height / 2 + 80;
-  let mouseSobreBotaoReiniciar = clicouNoBotaoReiniciar(mouseX, mouseY);
-  let corBotaoReiniciar = mouseSobreBotaoReiniciar
-    ? color(255, 150, 150)
-    : color(255, 100, 100);
-
-  // Box do botão
-  fill(20, 10, 20, 200);
-  stroke(corBotaoReiniciar, mouseSobreBotaoReiniciar ? 255 : 200);
-  strokeWeight(mouseSobreBotaoReiniciar ? 3 : 2);
-  rect(width / 2 - 200, botaoY - 15, 400, 30, 5);
-
-  fill(corBotaoReiniciar);
-  textSize(mouseSobreBotaoReiniciar ? 20 : 18);
-  text("CLIQUE OU PRESSIONE R PARA REINICIAR", width / 2, botaoY);
 }
 
-// Funções da tela inicial foram movidas para TelaInicio.js
+// Cicla entre as armas disponíveis
+function ciclarArma(delta) {
+  let idx = _armasDisponiveis.indexOf(tipoArmaAtual);
+  if (idx === 1) idx = 0;
+  idx = (idx + delta + _armasDisponiveis.length) % _armasDisponiveis.length;
+  trocarArma(_armasDisponiveis[idx]);
+}
 
-function reiniciarJogo() {
-  player = new Nave(750, 200, color(255, 50, 50));
-  municao = [];
-  balasInimigas = [];
-  inimigos = [];
-  efeitos = [];
-  textosFlutuantes = [];
-  powerUps = [];
-  pontuacao = 0;
-  gameOver = false;
-  jogoAtivo = true;
-  tipoArmaAtual = "basica";
-  ultimoTiro = 0; // Reset do timer de tiro contínuo
+function desenharArmaAtual() {
+  // Desenha um pequeno painel no canto superior direito com o nome da arma atual
+  let w = 160;
+  let h = 36;
+  let x = width - w - 20;
+  let y = 20;
 
-  if (!fundoTela && fundoEstrelado) {
-    fundoEstrelado.resetar();
-  }
+  push();
+  rectMode(CORNER);
+  fill(10, 10, 20, 180);
+  stroke(140, 140, 255);
+  strokeWeight(1);
+  rect(x, y, w, h, 6);
 
-  criarInimigos();
-  ultimoSpawnPowerUp = millis();
+  noStroke();
+  fill(220);
+  textSize(14);
+  textAlign(LEFT, CENTER);
+  text("Arma (Q):", x + 8, y + h / 2);
+
+  // Nome e pequeno ícone de bala
+  fill(200, 200, 255);
+  textAlign(RIGHT, CENTER);
+  let nome = tipoArmaAtual.toUpperCase();
+  text(nome, x + w - 10, y + h / 2);
+  pop();
 }

@@ -1,4 +1,4 @@
-// Classe base para balas (Herança)
+// Classe base para balas
 class BalaBase {
   constructor(x, y, raio, velocidade, direcao) {
     this.x = x;
@@ -7,11 +7,6 @@ class BalaBase {
     this.velocidade = velocidade;
     this.direcao = direcao;
     this.ativa = true;
-  }
-
-  // Método virtual para desenho
-  show() {
-    // Implementação base
   }
 
   // Método base para movimento

@@ -1,4 +1,4 @@
-// Classe base para power-ups (Herança)
+// Classe base para power-ups do jogo
 class PowerUpBase {
   constructor(x, y, tamanho, cor) {
     this.x = x;
@@ -9,14 +9,9 @@ class PowerUpBase {
     this.rotacao = 0;
   }
 
-  // Método virtual para desenho
-  show() {
-    // Implementação base
-  }
-
   // Movimento base
   mover() {
-    this.x -= 1; // Move para esquerda
+    this.x -= 1;
     this.rotacao += 0.05;
 
     if (this.x < -50) {

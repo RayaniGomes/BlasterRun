@@ -1,8 +1,8 @@
-// Sistema de Ranking com métodos estáticos
+// Sistema de Ranking
 class Ranking {
-  static #melhorPontuacao = 0; // Atributo privado estático
+  static #melhorPontuacao = 0;
 
-  // Método estático para obter melhor pontuação
+  // Método para obter melhor pontuação
   static getMelhorPontuacao() {
     let salvo = localStorage.getItem("melhorPontuacao");
     if (salvo) {
@@ -11,7 +11,7 @@ class Ranking {
     return this.#melhorPontuacao;
   }
 
-  // Método estático para salvar melhor pontuação
+  // Método para salvar melhor pontuação
   static salvarMelhorPontuacao(pontos) {
     let atual = this.getMelhorPontuacao();
     if (pontos > atual) {
@@ -22,13 +22,13 @@ class Ranking {
     return false;
   }
 
-  // Método estático para resetar ranking
+  // Método para resetar ranking
   static resetarRanking() {
     this.#melhorPontuacao = 0;
     localStorage.removeItem("melhorPontuacao");
   }
 
-  // Método estático para verificar se é novo recorde
+  // Método para verificar se é novo recorde
   static eNovoRecorde(pontos) {
     return pontos > this.getMelhorPontuacao();
   }
