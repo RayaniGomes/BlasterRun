@@ -17,7 +17,7 @@ Blaster Run é um jogo de nave com objetivo de sobreviver às ondas de inimigos,
 - Diferentes tipos de balas (Basica, rapida e dupla)
 - Power-ups (Vida Extra)
 - Sistema de pontuação e ranking
-- Nivel de dificuldade (a cada +500 pontos obtido, maior a elocidade do jogo)
+- Nivel de dificuldade (a cada +500 pontos obtido, maior a elocidade do jogo) 
 
 ## 🚀 Tecnologias utilizadas
 
@@ -28,10 +28,10 @@ Blaster Run é um jogo de nave com objetivo de sobreviver às ondas de inimigos,
 
 ## 🚀 Deploy
 
-O projeto utiliza o deploy da <a href="https://vercel.com" target="_blank">Vercel</a>, para visualizar o mesmo, por favor <a href="https://blaster-run.vercel.app/" target="_blank">clique aqui!</a>
+O projeto utiliza o deploy da [Vercel](https://vercel.com), para visualizar o mesmo, por favor [clique aqui!](https://blaster-run.vercel.app/)
 
 ## 📝 Licença
 
-<a href="https://github.com/RayaniGomes/blaster-run/blob/main/LICENSE" target="_blank">MIT License</a> © <a href="https://github.com/RayaniGomes" target="_blank">Rayani Gomes</a>
+[MIT License](https://github.com/RayaniGomes/blaster-run/blob/main/LICENSE) © [Rayani Gomes](https://github.com/RayaniGomes)
 
 ---
